@@ -1,0 +1,25 @@
+{% extends 'admin/base_site.html' %}
+
+{% block title %}Monitor Questions{% endblock %}
+
+{% block content %}
+
+
+<table>
+
+    <tr><th>House</th><th>Parliament and Session</th><th>Number</th><th>Identifier</th><th>Date</th><th>Answer?</th></tr>
+
+{% for question in questions %}
+
+    {% if question.type == 'break' %}
+      <tr><td colspan="7" class="break">Break</td></tr>
+    {% else %}
+      <tr><td>{{ question.question.house }}</td><td>Parliament {{ question.question.paper.parliament_number }}, Session {{ question.question.paper.session_number }}</td><td>{{ question.question.written_number }}</td><td>{{ question.question.identifier }}</td><td><a href="{{ question.question.paper.source_url }}">{{ question.question.date }}</a></td><td>{% if question.question.answer %}Yes{% else %}No{% endif %}</td></tr>
+    {% endif %}
+
+{% endfor %}
+
+</table>
+
+
+{% endblock %}

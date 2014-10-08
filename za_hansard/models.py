@@ -294,6 +294,40 @@ class QuestionPaper(models.Model):
     session_number = models.IntegerField() # Unique within parliament
     text = models.TextField()
 
+    def number_questions(self):
+        result = self.question_set.all().count()
+        return result
+
+    def minimum_number(self):
+        result = Question.objects.filter(paper=self).order_by('written_number')
+        if result:
+            return result[0].written_number
+        else:
+            return ''
+
+    def maximum_number(self):
+        result = Question.objects.filter(paper=self).order_by('written_number')
+        if result:
+            return result[0].written_number
+        else:
+            return ''
+
+    def written_range(self):
+        result = Question.objects.filter(paper=self)
+        if result:
+            difference = result.order_by('-written_number')[0].written_number - result.order_by('written_number')[0].written_number
+            if difference > 0:
+                return difference+1 #finds total
+        return ''
+
+    def oral_range(self):
+        result = Question.objects.filter(paper=self)
+        if result:
+            difference =  result.order_by('-oral_number')[0].written_number - result.order_by('oral_number')[0].written_number
+            if difference > 0:
+                return difference+1 #finds total
+        return ''
+
     class Meta:
         unique_together = ('year', 'issue_number', 'house', 'parliament_number')
         # index_together = ('year', 'issue_number', 'house', 'parliament_number')

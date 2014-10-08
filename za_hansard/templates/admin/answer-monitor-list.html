@@ -1,0 +1,20 @@
+{% extends 'admin/base_site.html' %}
+
+{% block title %}Monitor Answers{% endblock %}
+
+{% block content %}
+
+Total: {{ Total }} Matched: {{ Matched }} >1 match: {{ gtmatch }} 2013: {{ lastyear }}
+
+<table>
+<tr><th>House</th><th>year</th><th>Answer name / document name</th><th>Date</th><th>Processed code</th><th>Number matched questions</th><th>Text</th><th>Question details</th></tr>
+{% for answer in Answers %}
+
+    <tr><td>{{ answer.house }}</td><td>{{ answer.year }}</td><td>{{ answer.name }} {{ answer.document_name }}</td><td>{{ answer.date }}</td><td>{{ answer.processed_code }}</td><td>{{ answer.question.all.count }}</td><td>{{ answer.text }}</td><td>{{ answer.question.all.0.written_number }} {{ answer.question.all.0.question }}</td></tr>
+
+{% endfor %}
+
+</table>
+
+
+{% endblock %}
