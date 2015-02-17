@@ -451,14 +451,46 @@ class Question(models.Model):
         help_text='Associated Sayit section object, if imported',
         )
 
-    class Meta:
-        unique_together = (
-            ('written_number', 'house', 'year'),
-            ('oral_number', 'house', 'year'),
-            ('president_number', 'house', 'year'),
-            ('dp_number', 'house', 'year'),
-            ('id_number', 'house', 'year'),
-            )
+    def validate_unique(self, *args, **kwargs):
+        check_written = Question.objects.filter(
+            written_number=self.written_number,
+            house=self.house,
+            paper__parliament_number=self.paper.parliament_number,
+            paper__session_number=self.paper.session_number
+        ).exists()
+
+        check_oral = Question.objects.filter(
+            oral_number=self.oral_number,
+            house=self.house,
+            paper__parliament_number=self.paper.parliament_number,
+            paper__session_number=self.paper.session_number
+        ).exists()
+
+        check_president = Question.objects.filter(
+            president_number=self.president_number,
+            house=self.house,
+            paper__parliament_number=self.paper.parliament_number,
+            paper__session_number=self.paper.session_number
+        ).exists()
+
+        check_dp = Question.objects.filter(
+            dp_number=self.dp_number,
+            house=self.house,
+            paper__parliament_number=self.paper.parliament_number,
+            paper__session_number=self.paper.session_number
+        ).exists()
+
+        check_id = Question.objects.filter(
+            id_number=self.id_number,
+            house=self.house,
+            paper__parliament_number=self.paper.parliament_number,
+            paper__session_number=self.paper.session_number
+        ).exists()
+
+        if check_written or check_oral or check_president or check_dp or check_id:
+            raise ValidationError('Duplicate question.')
+
+    #class Meta:
         # index_together(
         #     ('written_number', 'house', 'year'),
         #     ('oral_number', 'house', 'year'),
