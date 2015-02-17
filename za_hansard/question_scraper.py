@@ -654,10 +654,13 @@ class QuestionPaperParser(object):
                 continue
 
             try:
+                parliament = question.paper.parliament_number
+                session = question.paper.session_number
                 existing_question = Question.objects.get(
                     id_number=question.id_number,
                     house=question.house,
-                    year=question.year,
+                    paper__parliament_number=parliament,
+                    paper__session_number=session
                 )
                 if existing_question.paper.date_published > question.paper.date_published:
                     # FIXME - in future real life, these duplicates will be bad.
@@ -671,10 +674,13 @@ class QuestionPaperParser(object):
                 else:
                     sys.stdout.write("BAD DUPLICATE: {0} already exists as {1} - keeping OLD VERSION\n".format(question.identifier, existing_question.identifier))
             except Question.DoesNotExist:
+                parliament = question.paper.parliament_number
+                session = question.paper.session_number
                 if Question.objects.filter(
                     written_number=question.written_number,
                     house=question.house,
-                    year=question.year,
+                    paper__parliament_number=parliament,
+                    paper__session_number=session,
                     ).exists():
                     sys.stdout.write(
                         "DUPLICATE written_number {0} {1} {2} - SKIPPING\n"
