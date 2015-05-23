@@ -339,7 +339,7 @@ class QuestionPaperParser(object):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
-    def get_questions(self):
+    def get_questions(self, rescrape=False):
         url = self.kwargs['url']
 
         pdfdata = self.get_question_pdf_from_url(url)
@@ -357,7 +357,7 @@ class QuestionPaperParser(object):
         #self.stderr.write("PDF len %d\n" % len(pdfdata))
         #self.stderr.write("XML %s\n" % xmldata)
 
-        self.create_questions_from_xml(xmldata, url)
+        self.create_questions_from_xml(xmldata, url, rescrape)
 
     def get_question_pdf_from_url(self, url):
         # FIXME - Cope with an HTTP error, etc here.
@@ -391,7 +391,7 @@ class QuestionPaperParser(object):
         ur"\[No\s*(?P<issue_number>\d+)\s*[\u2013\u2014]\s*(?P<year>\d{4})\]\s+(?P<session>[a-zA-Z]+)\s+SESSION,\s+(?P<parliament>[a-zA-Z]+)\s+PARLIAMENT",
         re.UNICODE | re.IGNORECASE)
 
-    def get_question_paper(self, chunk):
+    def get_question_paper(self, chunk, rescrape=False):
         """
         # Checks for session_re
         >>> session_string = u'[No 37\u20142013] FIFTH SESSION, FOURTH PARLIAMENT'
@@ -462,6 +462,9 @@ class QuestionPaperParser(object):
             # FIXME - We need to be able to cope with reprints of question papers.
             sys.stdout.write("\nBAILING OUT: Question Paper {0} too similar to\n".format(question_paper.source_url))
             sys.stdout.write("                            {0}\n".format(old_qp.source_url))
+            if rescrape:
+                return old_qp
+
         except QuestionPaper.DoesNotExist:
             question_paper.save()
             return question_paper
@@ -610,7 +613,7 @@ class QuestionPaperParser(object):
         return intro_chunk, chunks
 
 
-    def create_questions_from_xml(self, xmldata, url):
+    def create_questions_from_xml(self, xmldata, url, rescrape=False):
         # Sanity check on number of questions
         expected_question_count = len(re.findall(r'[NC][OW]\d+E', xmldata))
 
@@ -623,7 +626,7 @@ class QuestionPaperParser(object):
 
         intro_chunk, chunks = self.chunkify(text)
 
-        self.question_paper = self.get_question_paper(intro_chunk)
+        self.question_paper = self.get_question_paper(intro_chunk, rescrape)
 
         # Bail out if we didn't get a question paper
         if not self.question_paper:

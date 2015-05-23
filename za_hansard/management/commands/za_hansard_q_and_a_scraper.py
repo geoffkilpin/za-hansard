@@ -94,6 +94,11 @@ class Command(BaseCommand):
             action='store_true',
             help="Don't stop when reaching seen questions, continue to --limit",
         ),
+        make_option('--rescrape',
+            default=False,
+            action='store_true',
+            help="Reprocess previously downloaded question papers",
+        ),
     )
 
     start_url_q = ('http://www.parliament.gov.za/live/', 'content.php?Category_ID=236')
@@ -154,7 +159,7 @@ class Command(BaseCommand):
                 print "SKIPPING type is '{0}', not 'pdf'".format(
                     detail['type'])
             else:
-                if QuestionPaper.objects.filter(source_url=source_url).exists():
+                if QuestionPaper.objects.filter(source_url=source_url).exists() and not options['rescrape']:
                     self.stdout.write('SKIPPING as file already handled\n')
                     if not options['fetch_to_limit']:
                         self.stdout.write("Stopping as '--fetch-to-limit' not given\n")
@@ -162,7 +167,7 @@ class Command(BaseCommand):
                 else:
                     try:
                         self.stdout.write('PROCESSING')
-                        question_scraper.QuestionPaperParser(**detail).get_questions()
+                        question_scraper.QuestionPaperParser(**detail).get_questions(options['rescrape'])
                     except Exception as e:
                         self.stdout.write('ERROR handling {0}: {1}\n'.format(source_url, str(e)))
                         errors += 1
