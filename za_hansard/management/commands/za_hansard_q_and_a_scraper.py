@@ -21,6 +21,8 @@ from za_hansard.models import Question, Answer, QuestionPaper
 from za_hansard.importers.import_json import ImportJson
 from instances.models import Instance
 
+from django.core.exceptions import MultipleObjectsReturned
+
 # ideally almost all of the parsing code would be removed from this management
 # command and put into a module where it can be more easily tested and
 # separated. This is the start of that process.
@@ -265,7 +267,7 @@ class Command(BaseCommand):
 
     def match_answers(self, *args, **options):
         # FIXME - should change to a subset of all answers.
-        for answer in Answer.objects.all():
+        for answer in Answer.objects.all().filter():
             written_q = Q(written_number=answer.written_number)
             oral_q = Q(oral_number=answer.oral_number)
 
@@ -290,7 +292,14 @@ class Command(BaseCommand):
                     )
             except Question.DoesNotExist:
                 sys.stdout.write(
-                    "No question found for {0} {1}\n"
+                    "No question found for {0} {1} {2} {3}\n"
+                    .format(answer.id, answer.document_name, answer.date, answer.written_number)
+                    )
+                continue
+
+            except MultipleObjectsReturned:
+                sys.stdout.write(
+                    "Multiple questions found for {0} {1}\n"
                     .format(answer.id, answer.document_name)
                     )
                 continue
